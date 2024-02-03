@@ -53,7 +53,7 @@ function App() {
   }
   return (
     <>
-      <p>{status}</p>
+      <p style={{ color: "#e7d9d9" }}>{status}</p>
       <div className="board-row">
         <Square value={squares[0]} onSquareClick={() => handleClick(0)} />
         <Square value={squares[1]} onSquareClick={() => handleClick(1)} />
