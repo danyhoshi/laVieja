@@ -7,20 +7,33 @@ function Square({ value, onSquareClick }) {
     </button>
   );
 }
-function App() {
-  const [squares, setSquares] = useState(Array(9).fill(null));
-  const [turn, setTurn] = useState(true);
+function Board({ turn, squares, onPlay, isHistory }) {
+  // const [squares, setSquares] = useState(Array(9).fill(null));
+  // const [turn, setTurn] = useState(true);
+
+  // function handleClick(ii) {
+  //   const nextSquares = squares.slice();
+  //   if (squares[ii] || hasWinner()) {
+  //     return;
+  //   }
+  //   nextSquares[ii] = turn ? "X" : "O";
+  //   setSquares(nextSquares);
+  //   setTurn((prevState) => !prevState);
+  // }
 
   function handleClick(ii) {
-    const nextSquares = squares.slice();
-    if (squares[ii] || hasWinner()) {
+    if (hasWinner(squares) || squares[ii] || isHistory) {
       return;
     }
-    nextSquares[ii] = turn ? "X" : "O";
-    setSquares(nextSquares);
-    setTurn((prevState) => !prevState);
+    const nextSquares = squares.slice();
+    if (turn) {
+      nextSquares[ii] = "X";
+    } else {
+      nextSquares[ii] = "O";
+    }
+    onPlay(nextSquares);
   }
-  function hasWinner() {
+  function hasWinner(squares) {
     const winnerCases = [
       [0, 1, 2],
       [3, 4, 5],
@@ -33,7 +46,7 @@ function App() {
     ];
     for (let ii = 0; ii < 8; ii++) {
       let [a, b, c] = winnerCases[ii];
-      console.log(squares[a], squares[b], squares[c]);
+      // console.log(squares[a], squares[b], squares[c]);
       if (
         squares[a] &&
         squares[a] === squares[b] &&
@@ -73,4 +86,48 @@ function App() {
   );
 }
 
-export default App;
+export default function Game() {
+  const [xIsNext, setXIsNext] = useState(true);
+  const [history, setHistory] = useState([Array(9).fill(null)]);
+  const [currentMove, setCurrentMove] = useState(0);
+
+  const currentSquares = history[currentMove];
+  function handlePlay(nextSquares) {
+    const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+    setHistory(nextHistory);
+    setCurrentMove(nextHistory.length - 1);
+    setXIsNext((prevState) => !prevState);
+  }
+  function jumpTo(nextMove) {
+    setCurrentMove(nextMove);
+    setXIsNext(nextMove % 2 === 0);
+  }
+  const moves = history.map((squares, move) => {
+    let description;
+    if (move > 0) {
+      description = "Ir al movimiento #" + move;
+    } else {
+      description = "Ir al inicio del juego";
+    }
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)}>{description}</button>
+      </li>
+    );
+  });
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board
+          turn={xIsNext}
+          squares={currentSquares}
+          onPlay={handlePlay}
+          isHistory={history.length - 1 > currentMove}
+        />
+      </div>
+      <div className="game-info">
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+}
